@@ -26,7 +26,7 @@ def get_data():
         st.error(f"Erro na conexão com a planilha: {e}")
         return pd.DataFrame()
 
-# 3. Função para criar os Gráficos de Círculo (Donut) - CORRIGIDA
+# 3. Função para criar os Gráficos de Círculo (Donut) - CORRIGIDA PARA VISIBILIDADE TOTAL
 def criar_donut(valor, titulo, chave, cor="#0E3A5D"):
     valor_num = pd.to_numeric(valor, errors='coerce')
     if pd.isna(valor_num):
@@ -43,16 +43,16 @@ def criar_donut(valor, titulo, chave, cor="#0E3A5D"):
     
     fig.update_layout(
         showlegend=False,
-        # Aumentamos a margem superior (t) para 60 para não cortar a escrita
-        margin=dict(t=60, b=10, l=10, r=10),
-        # Altura aumentada para comportar o título e o gráfico com folga
-        height=240, 
+        # Margem superior (t) ajustada para garantir que o título não sobreponha
+        margin=dict(t=30, b=0, l=10, r=10),
+        height=200, 
         annotations=[dict(text=f'{valor_num:.1f}', x=0.5, y=0.5, font_size=22, showarrow=False, font_color="#31333F")]
     )
     
-    # Título centralizado acima do gráfico com margem de segurança
-    st.markdown(f"<p style='text-align: center; font-weight: bold; margin-bottom: -30px; font-size: 18px; color: #0E3A5D;'>{titulo}</p>", unsafe_allow_html=True)
-    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, key=chave)
+    # Criamos um container visual para manter o título e o gráfico unidos sem cortes
+    with st.container():
+        st.markdown(f"<p style='text-align: center; font-weight: bold; font-size: 18px; color: #0E3A5D; margin-bottom: -10px;'>{titulo}</p>", unsafe_allow_html=True)
+        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, key=chave)
 
 # 4. Execução do Dashboard
 df = get_data()
