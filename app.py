@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 from google.oauth2.service_account import Credentials
+import io  # Necessário para a exportação de arquivos
 
 # 1. Configurações Iniciais da Página
 st.set_page_config(page_title="Dashboard de Performance - Escrita", layout="wide")
@@ -52,7 +53,16 @@ def criar_donut(valor, titulo, chave, cor="#0E3A5D"):
         st.markdown(f"<p style='text-align: center; font-weight: bold; font-size: 16px; color: #0E3A5D;'>{titulo}</p>", unsafe_allow_html=True)
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, key=chave)
 
-# 4. Execução do Dashboard
+# 4. Função para converter DataFrame para Excel (Download)
+def to_excel(df):
+    output = io.BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    df.to_excel(writer, index=False, sheet_name='Dados_Dashboard')
+    writer.close()
+    processed_data = output.getvalue()
+    return processed_data
+
+# 5. Execução do Dashboard
 df = get_data()
 
 if not df.empty:
@@ -74,6 +84,17 @@ if not df.empty:
         df_filtrado = df[df['setor'] == setor_selecionado]
     else:
         df_filtrado = df
+
+    # --- BOTÃO DE EXPORTAÇÃO (NOVIDADE) ---
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Exportar Dados")
+    excel_data = to_excel(df_filtrado)
+    st.sidebar.download_button(
+        label="📥 Baixar em Excel",
+        data=excel_data,
+        file_name=f'performance_escrita_{setor_selecionado.lower()}.xlsx',
+        mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
 
     # --- TÍTULO PRINCIPAL ---
     st.title("📊 Dashboard de Performance")
