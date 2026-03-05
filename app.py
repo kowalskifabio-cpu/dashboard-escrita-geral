@@ -10,28 +10,39 @@ import io  # Necessário para a exportação de arquivos
 # 1. Configurações Iniciais da Página
 st.set_page_config(page_title="Dashboard de Performance - Escrita", layout="wide")
 
-# --- BLOCO DE SEGURANÇA VISUAL DEFINITIVO ---
+# --- BLOCO DE SEGURANÇA VISUAL AGRESSIVO (SOLUÇÃO DE FORÇA BRUTA) ---
 hide_st_style = """
             <style>
+            /* 1. Esconde elementos padrão do Streamlit */
             #MainMenu {visibility: hidden;}
             footer {visibility: hidden;}
             header {visibility: hidden;}
             
-            /* Esconde a Toolbar e botões de Status/Deploy para usuários externos */
-            [data-testid="stToolbar"] {visibility: hidden !important; display: none !important;}
-            [data-testid="stStatusWidget"] {visibility: hidden !important; display: none !important;}
-            .stAppDeployButton {display: none !important;}
+            /* 2. Esconde a Toolbar e botões de Status/Deploy (Pixels e Coroa) */
+            [data-testid="stToolbar"], 
+            [data-testid="stStatusWidget"], 
+            .stAppDeployButton,
+            [data-testid="stHeader"] {
+                display: none !important;
+                visibility: hidden !important;
+            }
             
-            /* Remove especificamente os botões que você circulou na imagem */
+            /* 3. Ataca especificamente os botões flutuantes pelo título e classe */
             button[title="View app status"], 
             button[title="Manage app"],
-            div[class*="st-emotion-cache-1vq4p4l"],
-            div[class*="stStatusWidget"] {
+            .st-emotion-cache-1vq4p4l,
+            .st-emotion-cache-k7vsyb,
+            .stStatusWidget {
                 display: none !important;
             }
 
-            /* Ajuste para mobile: remove o cabeçalho flutuante */
-            .stApp > header {display: none !important;}
+            /* 4. Remove o "Made with Streamlit" e o link de outros apps no rodapé */
+            .viewerBadge_container__1QSob { display: none !important; }
+            
+            /* 5. Ajuste de margem para compensar a retirada do header */
+            .main .block-container {
+                padding-top: 1rem !important;
+            }
             </style>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
