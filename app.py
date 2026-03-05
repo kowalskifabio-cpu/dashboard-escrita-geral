@@ -56,9 +56,9 @@ def criar_donut(valor, titulo, chave, cor="#0E3A5D"):
 # 4. Função para converter DataFrame para Excel (Download)
 def to_excel(df):
     output = io.BytesIO()
-    writer = pd.ExcelWriter(output, engine='xlsxwriter')
-    df.to_excel(writer, index=False, sheet_name='Dados_Dashboard')
-    writer.close()
+    # Usando 'with' para garantir que o writer salve e feche corretamente
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Dados_Dashboard')
     processed_data = output.getvalue()
     return processed_data
 
@@ -85,16 +85,19 @@ if not df.empty:
     else:
         df_filtrado = df
 
-    # --- BOTÃO DE EXPORTAÇÃO (NOVIDADE) ---
+    # --- BOTÃO DE EXPORTAÇÃO ---
     st.sidebar.markdown("---")
     st.sidebar.subheader("Exportar Dados")
-    excel_data = to_excel(df_filtrado)
-    st.sidebar.download_button(
-        label="📥 Baixar em Excel",
-        data=excel_data,
-        file_name=f'performance_escrita_{setor_selecionado.lower()}.xlsx',
-        mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
+    try:
+        excel_data = to_excel(df_filtrado)
+        st.sidebar.download_button(
+            label="📥 Baixar em Excel",
+            data=excel_data,
+            file_name=f'performance_escrita_{setor_selecionado.lower()}.xlsx',
+            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+    except Exception as e:
+        st.sidebar.error("Erro ao gerar Excel. Verifique se 'xlsxwriter' está instalado.")
 
     # --- TÍTULO PRINCIPAL ---
     st.title("📊 Dashboard de Performance")
