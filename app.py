@@ -199,5 +199,3 @@ if not df.empty:
 
 else:
     st.info("Aguardando o recebimento de dados da planilha para exibir o Dashboard.")
-else:
-    st.info("Aguardando o recebimento de dados da planilha para exibir o Dashboard.")
