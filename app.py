@@ -1,14 +1,4 @@
 import streamlit as st
-
-# Função para esconder o menu e o footer (Made with Streamlit)
-hide_st_style = """
-            <style>
-            #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            header {visibility: hidden;}
-            </style>
-            """
-st.markdown(hide_st_style, unsafe_allow_unsafe_allow_html=True)
 import gspread
 import pandas as pd
 import plotly.graph_objects as go
