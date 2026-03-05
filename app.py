@@ -10,18 +10,27 @@ import io  # Necessário para a exportação de arquivos
 # 1. Configurações Iniciais da Página
 st.set_page_config(page_title="Dashboard de Performance - Escrita", layout="wide")
 
-# --- BLOCO DE SEGURANÇA VISUAL (OCULTAR AVATAR E TOOLBAR) ---
+# --- BLOCO DE SEGURANÇA VISUAL DEFINITIVO ---
 hide_st_style = """
             <style>
             #MainMenu {visibility: hidden;}
             footer {visibility: hidden;}
             header {visibility: hidden;}
-            /* Esconde a Toolbar inteira (onde fica o avatar) */
+            
+            /* Esconde a Toolbar e botões de Status/Deploy para usuários externos */
             [data-testid="stToolbar"] {visibility: hidden !important; display: none !important;}
-            /* Esconde o botão de Deploy e o Avatar especificamente */
-            .stAppDeployButton {display:none !important;}
-            [data-testid="stStatusWidget"] {display:none !important;}
-            /* Ajuste para mobile para remover o espaço do cabeçalho */
+            [data-testid="stStatusWidget"] {visibility: hidden !important; display: none !important;}
+            .stAppDeployButton {display: none !important;}
+            
+            /* Remove especificamente os botões que você circulou na imagem */
+            button[title="View app status"], 
+            button[title="Manage app"],
+            div[class*="st-emotion-cache-1vq4p4l"],
+            div[class*="stStatusWidget"] {
+                display: none !important;
+            }
+
+            /* Ajuste para mobile: remove o cabeçalho flutuante */
             .stApp > header {display: none !important;}
             </style>
             """
@@ -188,5 +197,7 @@ if not df.empty:
         
     st.dataframe(df_filtrado[colunas_visiveis].tail(10), use_container_width=True)
 
+else:
+    st.info("Aguardando o recebimento de dados da planilha para exibir o Dashboard.")
 else:
     st.info("Aguardando o recebimento de dados da planilha para exibir o Dashboard.")
