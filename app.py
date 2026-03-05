@@ -10,18 +10,23 @@ import io  # Necessário para a exportação de arquivos
 # 1. Configurações Iniciais da Página
 st.set_page_config(page_title="Dashboard de Performance - Escrita", layout="wide")
 
-# --- IMPLEMENTAÇÃO REFORÇADA PARA OCULTAR INTERFACE E TOOLBAR ---
+# --- BLOCO DE SEGURANÇA VISUAL (OCULTAR AVATAR E TOOLBAR) ---
 hide_st_style = """
             <style>
             #MainMenu {visibility: hidden;}
             footer {visibility: hidden;}
             header {visibility: hidden;}
-            [data-testid="stToolbar"] {visibility: hidden !important;}
+            /* Esconde a Toolbar inteira (onde fica o avatar) */
+            [data-testid="stToolbar"] {visibility: hidden !important; display: none !important;}
+            /* Esconde o botão de Deploy e o Avatar especificamente */
             .stAppDeployButton {display:none !important;}
+            [data-testid="stStatusWidget"] {display:none !important;}
+            /* Ajuste para mobile para remover o espaço do cabeçalho */
+            .stApp > header {display: none !important;}
             </style>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
-# --------------------------------------------------------------
+# ------------------------------------------------------------
 
 # 2. Função para Conectar ao Google Sheets
 def get_data():
