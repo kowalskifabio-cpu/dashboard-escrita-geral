@@ -6,43 +6,36 @@ import plotly.express as px
 from google.oauth2.service_account import Credentials
 import io  # Necessário para a exportação de arquivos
 
-
 # 1. Configurações Iniciais da Página
 st.set_page_config(page_title="Dashboard de Performance - Escrita", layout="wide")
 
-# --- BLOCO DE SEGURANÇA VISUAL AGRESSIVO (SOLUÇÃO DE FORÇA BRUTA) ---
+# --- BLOCO DE SEGURANÇA VISUAL (ULTRA AGRESSIVO) ---
+# Este bloco remove tudo o que a plataforma injeta por cima do seu código
 hide_st_style = """
             <style>
-            /* 1. Esconde elementos padrão do Streamlit */
             #MainMenu {visibility: hidden;}
             footer {visibility: hidden;}
             header {visibility: hidden;}
             
-            /* 2. Esconde a Toolbar e botões de Status/Deploy (Pixels e Coroa) */
-            [data-testid="stToolbar"], 
-            [data-testid="stStatusWidget"], 
-            .stAppDeployButton,
-            [data-testid="stHeader"] {
-                display: none !important;
-                visibility: hidden !important;
-            }
+            /* Remove a barra de ferramentas (pixels e coroa) */
+            [data-testid="stToolbar"] {display: none !important;}
+            [data-testid="stStatusWidget"] {display: none !important;}
+            .stAppDeployButton {display: none !important;}
             
-            /* 3. Ataca especificamente os botões flutuantes pelo título e classe */
+            /* Remove o selo "Made with Streamlit" e o avatar no mobile */
+            div[data-testid="stDecoration"] {display: none !important;}
+            .viewerBadge_container__1QSob {display: none !important;}
+            
+            /* Esconde os botões específicos que você circulou na imagem */
             button[title="View app status"], 
             button[title="Manage app"],
-            .st-emotion-cache-1vq4p4l,
-            .st-emotion-cache-k7vsyb,
-            .stStatusWidget {
+            div[class*="StatusWidget"] {
                 display: none !important;
             }
 
-            /* 4. Remove o "Made with Streamlit" e o link de outros apps no rodapé */
-            .viewerBadge_container__1QSob { display: none !important; }
-            
-            /* 5. Ajuste de margem para compensar a retirada do header */
-            .main .block-container {
-                padding-top: 1rem !important;
-            }
+            /* Ajuste para mobile: remove o cabeçalho fixo branco */
+            .stApp > header {display: none !important;}
+            [data-testid="stHeader"] {display: none !important;}
             </style>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
@@ -59,7 +52,6 @@ def get_data():
         sh = client.open_by_key(st.secrets["SHEET_ID"])
         wks = sh.worksheet("respostas")
         df = pd.DataFrame(wks.get_all_records())
-        # Limpa espaços em branco nos nomes das colunas
         df.columns = [c.strip() for c in df.columns]
         return df
     except Exception as e:
@@ -95,7 +87,6 @@ def criar_donut(valor, titulo, chave, cor="#0E3A5D"):
 # 4. Função para converter DataFrame para Excel (Download)
 def to_excel(df):
     output = io.BytesIO()
-    # Usando 'with' para garantir que o writer salve e feche corretamente
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
         df.to_excel(writer, index=False, sheet_name='Dados_Dashboard')
     processed_data = output.getvalue()
@@ -136,14 +127,12 @@ if not df.empty:
             mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
     except Exception as e:
-        st.sidebar.error("Erro ao gerar Excel. Verifique se 'xlsxwriter' está instalado.")
+        st.sidebar.error("Erro ao gerar Excel.")
 
     # --- TÍTULO PRINCIPAL ---
     st.title("📊 Dashboard de Performance")
     
-    # --- BLOCO 1: CARTÕES DE RESUMO ---
     c1, c2, c3 = st.columns(3)
-    
     total_resp = len(df_filtrado)
     nps_medio = pd.to_numeric(df_filtrado['nota_geral'], errors='coerce').mean()
     
@@ -160,7 +149,6 @@ if not df.empty:
 
     st.markdown("##") 
 
-    # --- BLOCO 2: INDICADORES POR DESEMPENHO (Donuts) ---
     st.markdown("### 🎯 Desempenho por Indicador")
     ind1, ind2, ind3, ind4, ind5 = st.columns(5)
     
@@ -172,17 +160,8 @@ if not df.empty:
 
     st.divider()
 
-    # --- BLOCO 3: MÉDIAS POR DEPARTAMENTO (Barras) ---
     st.markdown("### 🏢 Médias por Departamento")
-    mapeamento_setores = {
-        "Contábil": "n_contabil",
-        "Fiscal": "n_fiscal",
-        "RH": "n_rh",
-        "Legal": "n_legal",
-        "Financeiro": "n_financeiro",
-        "BPO Fin.": "n_bpo"
-    }
-    
+    mapeamento_setores = {"Contábil": "n_contabil", "Fiscal": "n_fiscal", "RH": "n_rh", "Legal": "n_legal", "Financeiro": "n_financeiro", "BPO Fin.": "n_bpo"}
     dados_b = []
     for nome, col in mapeamento_setores.items():
         if col in df_filtrado.columns:
@@ -195,18 +174,14 @@ if not df.empty:
         fig_b = px.bar(df_b, x='Departamento', y='Média', text='Média', color_discrete_sequence=["#0E3A5D"])
         fig_b.update_layout(yaxis=dict(range=[0, 10.5]), margin=dict(t=20, b=20))
         st.plotly_chart(fig_b, use_container_width=True, key="bar_deptos")
-    else:
-        st.info("Sem dados de departamentos para exibir.")
 
     st.divider()
 
-    # --- BLOCO 4: TABELA DE FEEDBACKS ---
     st.markdown("### 💬 Últimos Feedbacks dos Clientes")
     colunas_visiveis = ['timestamp', 'cliente', 'nota_geral']
     if 'obs_financeiro' in df_filtrado.columns: colunas_visiveis.append('obs_financeiro')
     if 'obs_bpo' in df_filtrado.columns: colunas_visiveis.append('obs_bpo')
-        
     st.dataframe(df_filtrado[colunas_visiveis].tail(10), use_container_width=True)
 
 else:
-    st.info("Aguardando o recebimento de dados da planilha para exibir o Dashboard.")
+    st.info("Aguardando dados da planilha.")
